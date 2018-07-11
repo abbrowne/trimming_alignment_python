@@ -1,5 +1,10 @@
-## Ensure that fastq files are in one directory and pass this script the following arguments in order:
-##  1: Working directory   2: Genome directory to use for alignment   3: GTF file path for alignment
+## ----------------================Directions for using this script================----------------
+## Ensure that fastq.gz files are in one directory and pass this script the following arguments:
+##  1: Working directory   2: Genome directory for alignment   3: GTF file path for alignment
+## * You will need to edit the parsing of the gz files in the script or edit the names of the *
+##       * files themselves to match the following format: sample_name_R#.fastq.gz *
+##                 * with # being 1 and 2 for each read pair member *
+##      * e.g. sample_A_R1.fastq.gz and sample_B_R1.fastq.gz would be one read pair *
 
 import os
 import re
