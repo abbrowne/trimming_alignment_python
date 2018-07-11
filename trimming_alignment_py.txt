@@ -32,12 +32,11 @@ base_names.head()
 main_names.head()
 
 ##Initialize text and counters for full trimming run
-
 full_trimming_run = '#!/bin/bash\n'
 R1_temp = 0
 R2_temp = 1
 
-#Run trimming pipeline on each combined read pair
+##Run trimming pipeline on each combined read pair
 for main_name in main_names:
 	full_trimming_run = full_trimming_run + './' + main_name + '_trimming.sh\nsleep 2\n'
 	##Initialize trimming subrun text
@@ -73,21 +72,27 @@ for main_name in main_names:
 	'''.format(main_name, main_dir, main_dir, gz_files[R1_temp], main_dir, gz_files[R2_temp], gz_files[R1_temp], gz_files[R2_temp], main_dir, base_names[R1_temp], main_dir, base_names[R2_temp])
 	R1_temp += 2
 	R2_temp += 2
+	##Write trimming subrun job script to file
 	open_file = open(str(main_name + '_trimming.sh'), 'w')
 	open_file.write(trimming_run)
 	open_file.close()
 
-
+##Write full trimming run job submission to file
 full_trim = open(str('full_trimming_run.sh'), 'w')
 full_trim.write(full_trimming_run)
 full_trim.close()
+##Provide full user access to sh files
 os.system('chmod u+wrx *.sh')
 
+##Initialize text and counters for full trimming run
 full_alignment_run = '#!/bin/bash\n'
 R1_temp = 0
 R2_temp = 1
+
+##Run alignment pipeline on each combined trimmed read pair
 for main_name in main_names:
 	full_alignment_run = full_alignment_run + './' + main_name + '_alignment.sh\nsleep 2\n'
+	##Initialize trimming subrun text
 	alignment_run = '''#!/bin/bash
 	#BSUB -J {}
 	#BSUB -n 4
@@ -108,12 +113,15 @@ for main_name in main_names:
 	module load pigz
 	module load subread
 	
+	##Perform alignment with STAR
 	STAR --genomeDir {} --sjdbGTFfile {} --runThreadN 4 --outReadsUnmapped Fastx --outSAMtype BAM SortedByCoordinate --outSAMmode Full --outFileNamePrefix {}{}. --readFilesCommand zcat --readFilesIn {}_val_1.fq.gz,{}_val_2.fq.gz
 	echo Finished alignment at:
 	date
 	mv {}{}.accepted_hitsAligned.sortedByCoord.out.bam {}.accepted_hits.sort.coord.bam
+	##Build bam index
 	java -jar $PICARD_HOME/BuildBamIndex.jar I={}{}.accepted_hits.sort.coord.bam
 	cp {}{}.accepted_hits.sort.coord.bai {}{}.accepted_hits.sort.coord.bam.bai
+	##Run featureCounts on bam files
 	featureCounts -T 10 -t exon -g transcript_id -p -a {} -o {}.exon.transcriptID.txt {}{}.sort.coord.bam
 	featureCounts -T 10 -t exon -g gene_id -p -a {} -o {}.exon.geneID.txt {}{}.sort.coord.bam
 	featureCounts -T 10 -t exon -f -O -p -a {} -o {}.exon.txt {}{}.sort.coord.bam
@@ -123,12 +131,14 @@ for main_name in main_names:
 	'''.format(main_name, main_dir, genome_dir, gtf_dir, main_dir, main_name, base_names[R1_temp], base_names[R2_temp], main_dir, main_name, main_name, main_dir, main_name, main_dir, main_name, main_dir, main_name, gtf_dir, main_name, main_dir, main_name, gtf_dir, main_name, main_dir, main_name, gtf_dir, main_name, main_dir, main_name, gtf_dir, main_name, main_dir, main_name)
 	R1_temp += 2
 	R2_temp += 2
+	##Write alignment subrun job script to file
 	open_file = open(str(main_name + '_alignment.sh'), 'w')
 	open_file.write(alignment_run)
 	open_file.close()
 
-
+##Write full alignment run job submission to file
 full_align = open(str('full_alignment_run.sh'), 'w')
 full_align.write(full_alignment_run)
 full_align.close()
 os.system('chmod u+wrx *.sh')
+
