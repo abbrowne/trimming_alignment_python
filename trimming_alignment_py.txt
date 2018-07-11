@@ -5,8 +5,8 @@ import numpy as np
 
 ##Assign main directory for trimming and alignment
 main_dir = 'YOUR_DIR_HERE'
-genome_dir = 'YOUR_GENOME_DIR_HERE'
-gtf_dir = 'YOUR_GTF_FILE_HERE'
+genome_dir = 'GENOME_DIR_HERE'
+gtf_dir = 'GTF_FILE_HERE'
 
 os.chdir(main_dir)
 ##Get gz_files
@@ -17,14 +17,15 @@ gz_files = gz_files.reset_index(drop=True)
 ##Strip ending from file names and parse into base names of reads from each pair and main names of the combined pair
 temp_base_names = pd.Series([])
 temp_main_names = pd.Series([])
-for temp_base_name in gz_files:
-	temp_base_name = pd.Series([temp_base_name.replace('_001.fastq.gz','')])
+for base_name in gz_files:
+	temp_base_name = pd.Series([base_name.replace('.fastq.gz','')])
 	temp_base_names = temp_base_names.append(temp_base_name)
-	temp_main_name = pd.Series([temp_base_name.replace('_R1_001.fastq.gz','')])
+	temp_main_name = pd.Series([base_name.replace('_R1.fastq.gz','')])
 	temp_main_names = temp_main_names.append(temp_main_name)
+
 base_names = temp_base_names.copy().reset_index(drop=True)
-main_names = temp_main_names.copy()
-main_names = main_names[::2].sort_values().reset_index(drop=True)
+main_names = temp_main_names[::2].copy().sort_values().reset_index(drop=True)
+#main_names = main_names[::2].sort_values().reset_index(drop=True)
 
 ##Check file names
 gz_files.head()
@@ -41,7 +42,7 @@ for main_name in main_names:
 	full_trimming_run = full_trimming_run + './' + main_name + '_trimming.sh\nsleep 2\n'
 	##Initialize trimming subrun text
 	trimming_run = '''#!/bin/bash
-	#BSUB -J {}
+	#BSUB -J {}_trim_AB
 	#BSUB -n 1
 	#BSUB -R "rusage[mem=8000]"
 	#BSUB -R "span[ptile=1]"
@@ -94,7 +95,7 @@ for main_name in main_names:
 	full_alignment_run = full_alignment_run + './' + main_name + '_alignment.sh\nsleep 2\n'
 	##Initialize trimming subrun text
 	alignment_run = '''#!/bin/bash
-	#BSUB -J {}
+	#BSUB -J {}_align_AB
 	#BSUB -n 4
 	#BSUB -R "rusage[mem=8000]"
 	#BSUB -R "span[hosts=1]"
@@ -106,7 +107,7 @@ for main_name in main_names:
 	echo Started run at:
 	date
 	cd {}
-	module load star/2.5.3a
+	module load star/2.4.0j
 	module load samtools
 	module load java
 	module load picard/1.112
