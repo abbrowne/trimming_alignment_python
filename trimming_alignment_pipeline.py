@@ -35,7 +35,6 @@ for base_name in gz_files:
 
 base_names = temp_base_names.copy().reset_index(drop=True)
 main_names = temp_main_names[::2].copy().sort_values().reset_index(drop=True)
-#main_names = main_names[::2].sort_values().reset_index(drop=True)
 
 ##Check file names
 gz_files.head()
