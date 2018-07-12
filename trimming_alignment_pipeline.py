@@ -4,7 +4,7 @@
 ## * You will need to edit the parsing of the gz files in the script or edit the names of the *
 ##       * files themselves to match the following format: sample_name_R#.fastq.gz *
 ##                 * with # being 1 and 2 for each read pair member *
-##      * e.g. sample_A_R1.fastq.gz and sample_B_R1.fastq.gz would be one read pair *
+##      * e.g. sample_A_R1.fastq.gz and sample_A_R2.fastq.gz would be one read pair *
 
 import os
 import re
